@@ -15,15 +15,34 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
   const location = useLocation();
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Services', path: '/services' },
-    { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Home', path: '/', section: null },
+    { name: 'Services', path: '/#services', section: 'services' },
+    { name: 'About', path: '/#about', section: 'about' },
+    { name: 'Contact', path: '/#contact', section: 'contact' },
   ];
 
-  const handleNav = (path: string) => {
+  const handleNav = (path: string, section?: string | null) => {
     setIsMobileMenuOpen(false);
-    navigate(path);
+    if (section) {
+      // Navigate to home first if not there
+      if (location.pathname !== '/') {
+        navigate('/');
+        setTimeout(() => {
+          const element = document.getElementById(section);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      } else {
+        const element = document.getElementById(section);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    } else {
+      navigate(path);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -33,11 +52,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
-            <div 
-              className="font-serif text-2xl tracking-widest font-semibold cursor-pointer select-none"
+            <div
+              className="cursor-pointer select-none"
               onClick={() => handleNav('/')}
             >
-              JHL
+              <img
+                src="./K (4).svg"
+                alt="JHL Logo"
+                className="h-44 w-auto object-contain"
+              />
             </div>
 
             {/* Desktop Nav */}
@@ -45,10 +68,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               {navLinks.map((link) => (
                 <button
                   key={link.name}
-                  onClick={() => handleNav(link.path)}
-                  className={`text-sm tracking-widest hover:text-gray-500 transition-colors uppercase ${location.pathname === link.path ? 'font-medium border-b border-black' : ''}`}
+                  onClick={() => handleNav(link.path, link.section)}
+                  className={`text-sm tracking-widest hover:text-gray-500 transition-colors uppercase relative group ${location.pathname === link.path ? 'font-medium' : ''}`}
                 >
                   {link.name}
+                  <span className={`absolute -bottom-1 left-0 h-0.5 bg-black transition-all duration-300 ${location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                 </button>
               ))}
             </nav>
@@ -57,7 +81,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
             <div className="hidden md:flex items-center space-x-6">
               {user ? (
                 <div className="flex items-center space-x-4">
-                  <button 
+                  <button
                     onClick={() => handleNav(user.role === UserRole.ADMIN ? '/admin' : '/dashboard')}
                     className="flex items-center space-x-2 text-sm hover:text-gray-600"
                   >
@@ -94,20 +118,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               {navLinks.map((link) => (
                 <button
                   key={link.name}
-                  onClick={() => handleNav(link.path)}
-                  className="block text-2xl font-serif text-jhl-black hover:text-gray-600"
+                  onClick={() => handleNav(link.path, link.section)}
+                  className="block text-2xl font-serif text-jhl-black hover:text-gray-600 transition-colors"
                 >
                   {link.name}
                 </button>
               ))}
               <div className="pt-8 border-t border-gray-100 w-full flex justify-center">
                 {user ? (
-                   <button 
-                   onClick={() => handleNav('/dashboard')}
-                   className="text-lg"
-                 >
-                   Dashboard
-                 </button>
+                  <button
+                    onClick={() => handleNav('/dashboard')}
+                    className="text-lg"
+                  >
+                    Dashboard
+                  </button>
                 ) : (
                   <button
                     onClick={() => handleNav('/auth')}
@@ -131,12 +155,18 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
       <footer className="bg-jhl-black text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
-            <div className="font-serif text-2xl tracking-widest mb-6">JHL</div>
+            <div className="mb-6">
+              <img
+                src="./K (4).svg"
+                alt="JHL Logo"
+                className="h-64 w-auto object-contain brightness-0 invert"
+              />
+            </div>
             <p className="text-gray-400 text-sm leading-relaxed">
               Curating a lifestyle of elegance, health, and human connection through exceptional service.
             </p>
           </div>
-          
+
           <div>
             <h3 className="uppercase text-xs tracking-[0.2em] mb-6 text-gray-500">Services</h3>
             <ul className="space-y-4 text-sm text-gray-300">
@@ -159,9 +189,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <div>
             <h3 className="uppercase text-xs tracking-[0.2em] mb-6 text-gray-500">Newsletter</h3>
             <div className="flex border-b border-gray-700 pb-2">
-              <input 
-                type="email" 
-                placeholder="EMAIL ADDRESS" 
+              <input
+                type="email"
+                placeholder="EMAIL ADDRESS"
                 className="bg-transparent border-none outline-none text-white text-sm w-full placeholder-gray-600"
               />
               <button className="text-gray-400 hover:text-white"><ChevronRight size={16} /></button>

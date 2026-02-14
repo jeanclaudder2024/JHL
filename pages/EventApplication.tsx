@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, Calendar, MapPin, Users, Mail, Wine, ArrowLeft, Clock } from 'lucide-react';
+import { eventsApi } from '../services/api';
 
 export const EventApplication: React.FC = () => {
   const navigate = useNavigate();
@@ -27,21 +28,25 @@ export const EventApplication: React.FC = () => {
   const eventTypes = ["Corporate Gala", "Private Dinner", "Wedding", "Product Launch", "Networking", "Other"];
 
   const toggleSelection = (list: string[], item: string, field: 'serviceStyle' | 'dietaryFocus') => {
-    const updatedList = list.includes(item) 
+    const updatedList = list.includes(item)
       ? list.filter(i => i !== item)
       : [...list, item];
     setFormData({ ...formData, [field]: updatedList });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate network request
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await eventsApi.create(formData);
       setIsSubmitted(true);
       window.scrollTo(0, 0);
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting event inquiry:', error);
+      alert('Failed to submit inquiry. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -61,7 +66,7 @@ export const EventApplication: React.FC = () => {
               Our Event Specialists will review your vision and availability. You will receive a preliminary consultation request at <span className="font-medium">{formData.contactEmail}</span> within 24 hours.
             </p>
           </div>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="text-xs uppercase tracking-widest border-b border-black pb-1 hover:text-gray-600 hover:border-gray-400 transition-all"
           >
@@ -75,8 +80,8 @@ export const EventApplication: React.FC = () => {
   return (
     <div className="min-h-screen bg-zinc-50 py-12 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
-        <button 
-          onClick={() => navigate('/')} 
+        <button
+          onClick={() => navigate('/')}
           className="flex items-center text-xs uppercase tracking-widest text-gray-500 hover:text-black mb-8 transition-colors"
         >
           <ArrowLeft size={16} className="mr-2" /> Back
@@ -91,7 +96,7 @@ export const EventApplication: React.FC = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 md:p-12">
-            
+
             {/* Event Details */}
             <div className="mb-12">
               <h3 className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-2">
@@ -100,10 +105,10 @@ export const EventApplication: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Event Type</label>
-                  <select 
+                  <select
                     required
                     value={formData.eventType}
-                    onChange={e => setFormData({...formData, eventType: e.target.value})}
+                    onChange={e => setFormData({ ...formData, eventType: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent text-gray-700"
                   >
                     <option value="" disabled>Select Type</option>
@@ -113,32 +118,32 @@ export const EventApplication: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                   <label className="text-xs uppercase tracking-wider text-gray-600">Guest Count (Approx)</label>
-                   <input 
+                  <label className="text-xs uppercase tracking-wider text-gray-600">Guest Count (Approx)</label>
+                  <input
                     required
-                    type="number" 
+                    type="number"
                     value={formData.guestCount}
-                    onChange={e => setFormData({...formData, guestCount: e.target.value})}
+                    onChange={e => setFormData({ ...formData, guestCount: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300"
                     placeholder="e.g. 50"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Date</label>
-                  <input 
+                  <input
                     required
-                    type="date" 
+                    type="date"
                     value={formData.eventDate}
-                    onChange={e => setFormData({...formData, eventDate: e.target.value})}
+                    onChange={e => setFormData({ ...formData, eventDate: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300 text-gray-700"
                   />
                 </div>
                 <div className="space-y-2">
-                   <label className="text-xs uppercase tracking-wider text-gray-600">Start Time</label>
-                   <input 
-                    type="time" 
+                  <label className="text-xs uppercase tracking-wider text-gray-600">Start Time</label>
+                  <input
+                    type="time"
                     value={formData.startTime}
-                    onChange={e => setFormData({...formData, startTime: e.target.value})}
+                    onChange={e => setFormData({ ...formData, startTime: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent text-gray-700"
                   />
                 </div>
@@ -146,13 +151,13 @@ export const EventApplication: React.FC = () => {
                   <label className="text-xs uppercase tracking-wider text-gray-600">Location / Venue</label>
                   <div className="flex items-center border-b border-gray-300 focus-within:border-black transition-colors">
                     <MapPin size={16} className="text-gray-400 mr-2" />
-                    <input 
-                        required
-                        type="text" 
-                        value={formData.location}
-                        onChange={e => setFormData({...formData, location: e.target.value})}
-                        className="w-full py-2 outline-none bg-transparent placeholder-gray-300"
-                        placeholder="Address or Venue Name"
+                    <input
+                      required
+                      type="text"
+                      value={formData.location}
+                      onChange={e => setFormData({ ...formData, location: e.target.value })}
+                      className="w-full py-2 outline-none bg-transparent placeholder-gray-300"
+                      placeholder="Address or Venue Name"
                     />
                   </div>
                 </div>
@@ -164,19 +169,18 @@ export const EventApplication: React.FC = () => {
               <h3 className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-6 flex items-center gap-2">
                 <Wine size={16} /> Culinary Vision
               </h3>
-              
+
               <div className="mb-8">
                 <label className="block text-sm font-serif mb-4">Service Style</label>
                 <div className="flex flex-wrap gap-3">
                   {serviceStyles.map(option => (
-                    <div 
+                    <div
                       key={option}
                       onClick={() => toggleSelection(formData.serviceStyle, option, 'serviceStyle')}
-                      className={`cursor-pointer border px-4 py-3 text-sm transition-all duration-300 ${
-                        formData.serviceStyle.includes(option) 
-                          ? 'bg-black text-white border-black shadow-md' 
+                      className={`cursor-pointer border px-4 py-3 text-sm transition-all duration-300 ${formData.serviceStyle.includes(option)
+                          ? 'bg-black text-white border-black shadow-md'
                           : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {option}
                     </div>
@@ -188,29 +192,28 @@ export const EventApplication: React.FC = () => {
                 <label className="block text-sm font-serif mb-4">Dietary Requirements</label>
                 <div className="flex flex-wrap gap-3">
                   {dietaryOptions.map(option => (
-                    <div 
+                    <div
                       key={option}
                       onClick={() => toggleSelection(formData.dietaryFocus, option, 'dietaryFocus')}
-                      className={`cursor-pointer border px-4 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-300 ${
-                        formData.dietaryFocus.includes(option) 
-                          ? 'bg-black text-white border-black' 
+                      className={`cursor-pointer border px-4 py-2 text-xs uppercase tracking-wider rounded-full transition-all duration-300 ${formData.dietaryFocus.includes(option)
+                          ? 'bg-black text-white border-black'
                           : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
-                      }`}
+                        }`}
                     >
                       {option}
                     </div>
                   ))}
                 </div>
               </div>
-              
+
               <div className="mt-8 space-y-2">
-                 <label className="text-xs uppercase tracking-wider text-gray-600">Additional Notes / Theme</label>
-                 <textarea 
-                    value={formData.vision}
-                    onChange={e => setFormData({...formData, vision: e.target.value})}
-                    className="w-full border border-gray-300 p-3 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300 h-24 resize-none"
-                    placeholder="Describe the atmosphere, specific dishes desired, or any other details..."
-                  />
+                <label className="text-xs uppercase tracking-wider text-gray-600">Additional Notes / Theme</label>
+                <textarea
+                  value={formData.vision}
+                  onChange={e => setFormData({ ...formData, vision: e.target.value })}
+                  className="w-full border border-gray-300 p-3 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300 h-24 resize-none"
+                  placeholder="Describe the atmosphere, specific dishes desired, or any other details..."
+                />
               </div>
             </div>
 
@@ -222,41 +225,41 @@ export const EventApplication: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Full Name</label>
-                  <input 
+                  <input
                     required
-                    type="text" 
+                    type="text"
                     value={formData.contactName}
-                    onChange={e => setFormData({...formData, contactName: e.target.value})}
+                    onChange={e => setFormData({ ...formData, contactName: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300"
                     placeholder="Host Name"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Email Address</label>
-                  <input 
+                  <input
                     required
-                    type="email" 
+                    type="email"
                     value={formData.contactEmail}
-                    onChange={e => setFormData({...formData, contactEmail: e.target.value})}
+                    onChange={e => setFormData({ ...formData, contactEmail: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300"
                     placeholder="host@example.com"
                   />
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Phone Number</label>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     value={formData.phone}
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent placeholder-gray-300"
                     placeholder="(555) 000-0000"
                   />
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wider text-gray-600">Estimated Budget</label>
-                   <select 
+                  <select
                     value={formData.budget}
-                    onChange={e => setFormData({...formData, budget: e.target.value})}
+                    onChange={e => setFormData({ ...formData, budget: e.target.value })}
                     className="w-full border-b border-gray-300 py-2 focus:border-black outline-none transition-colors bg-transparent text-gray-700"
                   >
                     <option value="" disabled>Select Range</option>
@@ -271,8 +274,8 @@ export const EventApplication: React.FC = () => {
 
             {/* Submit */}
             <div className="flex flex-col items-center">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="bg-black text-white px-12 py-4 uppercase tracking-widest text-xs hover:bg-gray-800 transition-all disabled:bg-gray-400 w-full md:w-auto"
               >

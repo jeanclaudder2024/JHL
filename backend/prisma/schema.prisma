@@ -1,0 +1,283 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ========== USER & AUTHENTICATION ==========
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole  @default(GUEST)
+  avatar        String?
+  companyId     String?
+  company       Company?  @relation(fields: [companyId], references: [id])
+  
+  subscriptions Subscription[]
+  mealRatings   MealRating[]
+  mealAssignments MealAssignment[]
+  supportTickets SupportTicket[]
+  chatMessages  ChatMessage[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum UserRole {
+  GUEST
+  INDIVIDUAL
+  COMPANY_ADMIN
+  ADMIN
+}
+
+// ========== COMPANY & APPLICATIONS ==========
+model Company {
+  id            String    @id @default(uuid())
+  name          String
+  industry      String?
+  employeeCount Int
+  location      String?
+  
+  users         User[]
+  employees     Employee[]
+  application   CompanyApplication?
+  invoices      Invoice[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model CompanyApplication {
+  id              String    @id @default(uuid())
+  companyId       String    @unique
+  company         Company   @relation(fields: [companyId], references: [id])
+  
+  contactName     String
+  contactEmail    String
+  phone           String?
+  mealTypes       String    @db.Text
+  dietaryFocus    String    @db.Text
+  notes           String?   @db.Text
+  
+  status          ApplicationStatus @default(PENDING)
+  invoiceAmount   Decimal?  @db.Decimal(10, 2)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED_UNPAID
+  APPROVED_PAID
+  REJECTED
+}
+
+// ========== EVENTS ==========
+model EventInquiry {
+  id            String    @id @default(uuid())
+  eventType     String
+  eventDate     DateTime
+  startTime     String?
+  location      String
+  guestCount    Int
+  
+  contactName   String
+  contactEmail  String
+  phone         String?
+  
+  serviceStyle  String    @db.Text
+  dietaryFocus  String    @db.Text
+  budget        String?
+  vision        String?   @db.Text
+  
+  status        EventStatus @default(NEW)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum EventStatus {
+  NEW
+  IN_DISCUSSION
+  CONFIRMED
+  DECLINED
+}
+
+// ========== MENU & MEALS ==========
+model Meal {
+  id            String    @id @default(uuid())
+  name          String
+  description   String    @db.Text
+  calories      Int
+  image         String
+  date          DateTime
+  type          MealType
+  
+  ingredients   String?   @db.Text
+  protein       Int?
+  carbs         Int?
+  fats          Int?
+  
+  isActive      Boolean   @default(true)
+  
+  ratings       MealRating[]
+  assignments   MealAssignment[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// ========== MEAL ASSIGNMENTS ==========
+model MealAssignment {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  mealId        String
+  meal          Meal      @relation(fields: [mealId], references: [id])
+  
+  assignedDate  DateTime  // The date the meal is assigned for
+  deliveryTime  String?   // e.g. "Lunch", "Dinner", "Breakfast"
+  
+  status        AssignmentStatus @default(SCHEDULED)
+  notes         String?   @db.Text
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([userId, mealId, assignedDate])
+}
+
+enum AssignmentStatus {
+  SCHEDULED
+  DELIVERED
+  CANCELLED
+}
+
+enum MealType {
+  Standard
+  Vegetarian
+  Vegan
+}
+
+model MealRating {
+  id            String    @id @default(uuid())
+  mealId        String
+  meal          Meal      @relation(fields: [mealId], references: [id])
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  rating        Int
+  feedback      String?   @db.Text
+  
+  createdAt     DateTime  @default(now())
+  
+  @@unique([mealId, userId])
+}
+
+// ========== SUBSCRIPTIONS ==========
+model Subscription {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  planName      String
+  price         Decimal   @db.Decimal(10, 2)
+  period        String
+  cycle         String
+  features      String    @db.Text
+  
+  status        SubscriptionStatus @default(ACTIVE)
+  nextBilling   DateTime
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+}
+
+// ========== EMPLOYEES (Company Team) ==========
+model Employee {
+  id            String    @id @default(uuid())
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id])
+  
+  name          String
+  email         String
+  status        EmployeeStatus @default(INVITED)
+  dietary       String?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INVITED
+  INACTIVE
+}
+
+// ========== INVOICES ==========
+model Invoice {
+  id            String    @id @default(uuid())
+  companyId     String
+  company       Company   @relation(fields: [companyId], references: [id])
+  
+  date          DateTime
+  amount        Decimal   @db.Decimal(10, 2)
+  status        InvoiceStatus @default(PENDING)
+  items         String
+  
+  createdAt     DateTime  @default(now())
+}
+
+enum InvoiceStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+// ========== SUPPORT ==========
+model SupportTicket {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  subject       String
+  status        TicketStatus @default(OPEN)
+  lastMessage   String    @db.Text
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+}
+
+// ========== CHAT ==========
+model ChatMessage {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  role          MessageRole
+  text          String    @db.Text
+  
+  createdAt     DateTime  @default(now())
+}
+
+enum MessageRole {
+  user
+  model
+}
