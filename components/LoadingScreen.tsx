@@ -218,7 +218,7 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
                 <div className="logo-container relative mb-8">
                     <div className="logo-mask relative overflow-hidden">
                         <img
-                            src="./K (4).svg"
+                            src="./logo.svg"
                             alt="JHL Logo"
                             className="w-80 h-80 md:w-[420px] md:h-[420px] object-contain"
                         />

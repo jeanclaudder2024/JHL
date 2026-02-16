@@ -57,7 +57,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               onClick={() => handleNav('/')}
             >
               <img
-                src="./K (4).svg"
+                src="./logo.svg"
                 alt="JHL Logo"
                 className="h-44 w-auto object-contain"
               />
@@ -157,7 +157,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <div className="col-span-1 md:col-span-1">
             <div className="mb-6">
               <img
-                src="./K (4).svg"
+                src="./logo.svg"
                 alt="JHL Logo"
                 className="h-64 w-auto object-contain brightness-0 invert"
               />
