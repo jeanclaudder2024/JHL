@@ -889,7 +889,8 @@ export const Home: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-widest text-gray-500 mb-1">Address</div>
-                    <div className="font-medium">123 Culinary Lane, New York, NY 10001</div>
+                    <div className="font-medium">Chemin des pâquerettes 23</div>
+                    <div className="font-medium">1213 Genève, Switzerland</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -907,7 +908,8 @@ export const Home: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-widest text-gray-500 mb-1">Phone</div>
-                    <div className="font-medium">+1 (555) 123-4567</div>
+                    <div className="font-medium">+41 22 303 79 59</div>
+                    <div className="font-medium text-sm text-gray-600">+41 79 849 16 35</div>
                   </div>
                 </div>
               </div>
